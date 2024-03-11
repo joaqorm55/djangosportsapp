@@ -1,0 +1,113 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+{% block title %}{% endblock %}
+
+
+
+<h1>Upload Box Score</h1>
+<br/> 
+<p> Make sure to upload PDF file and click submit to get game summary</p>
+
+<br/>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #fileUploadForm {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #fileUploadForm input,
+        #fileUploadForm button,
+        #loadingSpinner {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<form method="post" enctype="multipart/form-data" class="was-validated" id="fileUploadForm">
+    {% csrf_token %}
+    <div class="input-group is-invalid">
+        <div class="custom-file">
+          <input type="file" name = "document" class="custom-file-input" id="validatedInputGroupCustomFile" required>
+          <label class="custom-file-label" for="validatedInputGroupCustomFile">Choose file...</label>
+        </div>
+        <div class="input-group-append">
+           <button class="btn btn-secondary" type="submit">Create</button>
+        </div>
+      </div>
+    <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</form>
+
+{% if message %}
+
+    <p> Uploaded File: <a href = "{{ url }}"> {{ url }}</a> </p>
+    <p>{{ assistant }}</p>
+
+    {% include 'metric_cards.html' with summary=summary %}
+
+    <div >
+        <div class="jumbotron">
+            <h2 class="display-4">{{ summary.team_info.Team_1 }} - {{summary.Team_Comparison.Goals.Team_1}} FT {{summary.Team_Comparison.Goals.Team_2}} - {{ summary.team_info.Team_2 }}</h2>
+            
+            <!-- Display specific information from the JSON data -->
+            <p>Date: {{ summary.game_info.date }}</p>
+            <p>Attendance: {{ summary.game_info.attendance }}</p>
+            <p>Stadium: {{ summary.game_info.location }}</p>
+            
+            <!-- Access nested data -->
+            
+            <!-- Display scoring summary -->
+            <h2 class="mt-4">Scoring Summary</h2>
+            <ul>
+                {% for goal in summary.scoring_summary %}
+                    <li>
+                        Time: {{ goal.time }}, Team: {{ goal.team }}, Goal Scorer: {{ goal.goal_scorer }},
+                        Assist: {{ goal.assist|default:"None" }}, Description: {{ goal.description }}
+                    </li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Display cautions and ejections -->
+            <h2 class="mt-4">Cautions and Ejections</h2>
+            <ul>
+                {% for caution in summary.cautions_and_ejections %}
+                    <li>
+                        Time: {{ caution.time }}, Team: {{ caution.team }}, Player: {{ caution.player }},
+                        Card: {{ caution.card }}
+                    </li>
+                {% endfor %}
+            </ul>
+            
+        </div>
+    </div>
+    <div class = "jumbotron">
+        <p> {{ message }}</p>
+    </div>
+
+{% endif %}
+
+<script>
+    document.getElementById('fileUploadForm').addEventListener('submit', function (event) {
+        // Show the loading spinner when the form is submitted
+        document.getElementById('loadingSpinner').style.display = 'inline-block';
+    });
+</script>
+
+<script>
+    // JavaScript to update the label when a file is selected
+    document.getElementById('validatedInputGroupCustomFile').addEventListener('change', function (e) {
+      var fileName = e.target.files[0].name;
+      var label = document.querySelector('.custom-file-label');
+      label.innerHTML = fileName;
+    });
+</script>
+
+{% endblock %}

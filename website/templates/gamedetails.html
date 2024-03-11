@@ -1,0 +1,88 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+{% block title %}{% endblock %}
+
+
+
+<h1>Upload Box Score PDF</h1>
+<br/> 
+<p> Make sure to upload PDF file and click submit to get all relevant game information</p>
+
+<br/>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #fileUploadForm {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #fileUploadForm input,
+        #fileUploadForm button,
+        #loadingSpinner {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<form method="post" enctype="multipart/form-data" class="was-validated" id="fileUploadForm">
+    {% csrf_token %}
+    <div class="input-group is-invalid">
+        <div class="custom-file">
+          <input type="file" name = "document" class="custom-file-input" id="validatedInputGroupCustomFile" required>
+          <label class="custom-file-label" for="validatedInputGroupCustomFile">Choose file...</label>
+        </div>
+        <div class="input-group-append">
+           <button class="btn btn-secondary" type="submit">Create</button>
+        </div>
+      </div>
+    <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</form>
+<table border="1">
+    <tr>
+        {% for col in data.0.keys %}
+            <th>{{ col }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in data %}
+        <tr>
+            {% for value in row.values %}
+                <td>{{ value }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+{% if url %}
+
+    <p> Uploaded File: <a href = "{{ url }}"> {{ url }}</a> </p>
+    <p>{{ assistant }}</p>
+    <div class = "jumbotron">
+        <p> {{ message }}</p>
+    </div>
+
+{% endif %}
+
+<script>
+    document.getElementById('fileUploadForm').addEventListener('submit', function (event) {
+        // Show the loading spinner when the form is submitted
+        document.getElementById('loadingSpinner').style.display = 'inline-block';
+    });
+</script>
+
+<script>
+    // JavaScript to update the label when a file is selected
+    document.getElementById('validatedInputGroupCustomFile').addEventListener('change', function (e) {
+      var fileName = e.target.files[0].name;
+      var label = document.querySelector('.custom-file-label');
+      label.innerHTML = fileName;
+    });
+</script>
+
+{% endblock %}
